@@ -38,7 +38,7 @@ const AdminPanel = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 py-8 px-4">
+        <div className="min-h-screen bg-gray-100 py-8 px-4 animate-slide-up">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-purple-600 to-purple-700 rounded-t-lg p-6 text-white">
