@@ -7,5 +7,4 @@ const checkValidData = (email, password) => {
 
     return null;
 }
-
 export default checkValidData;
