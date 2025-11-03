@@ -22,7 +22,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Firebase config (contains sensitive data)
-src/utils/firebase.js
+# Firebase setup docs
 FIREBASE_STORAGE_SETUP.md
 
