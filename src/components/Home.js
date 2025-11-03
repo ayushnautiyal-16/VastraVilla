@@ -291,7 +291,7 @@ const Home = () => {
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 py-20 px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">How ShareBite Works</h2>
+                        <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">How VastraVilla Works</h2>
                         <p className="text-lg text-gray-600">Simple steps to rent your dream outfit</p>
                     </div>
 
