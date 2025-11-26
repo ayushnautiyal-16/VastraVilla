@@ -55,15 +55,15 @@ const Navbar = () => {
     const isActive = (path) => location.pathname === path;
 
     return (
-        <nav className="bg-white shadow-lg sticky top-0 z-50 w-full border-b border-gray-200">
+        <nav className="bg-white shadow-lg sticky top-0 z-40 w-full border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo Section */}
                     <div className="flex items-center">
                         <Link to="/" className="flex items-center space-x-2 no-underline group">
-                            <img 
-                                src="/logo.png" 
-                                alt="VastraVilla" 
+                            <img
+                                src="/logo.png"
+                                alt="VastraVilla"
                                 className="h-10 w-10 object-contain transition-transform group-hover:scale-110"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
@@ -90,7 +90,7 @@ const Navbar = () => {
                                     className="w-full px-4 py-2.5 pr-12 text-sm border-2 border-gray-200 rounded-full outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
                                     placeholder="Search for wedding wear, party outfits, designer clothes..."
                                 />
-                                <button 
+                                <button
                                     type="submit"
                                     className="absolute right-2 p-2 text-gray-400 hover:text-purple-600 transition-colors"
                                 >
@@ -105,49 +105,45 @@ const Navbar = () => {
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-1">
                         {/* Home Link */}
-                        <Link 
-                            to="/" 
-                            className={`px-3 py-2 rounded-lg text-sm font-medium no-underline transition-all ${
-                                isActive('/') 
-                                    ? 'bg-purple-100 text-purple-700' 
+                        <Link
+                            to="/"
+                            className={`px-3 py-2 rounded-lg text-sm font-medium no-underline transition-all ${isActive('/')
+                                    ? 'bg-purple-100 text-purple-700'
                                     : 'text-gray-700 hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             Home
                         </Link>
 
                         {/* About Us */}
-                        <Link 
-                            to="/about" 
-                            className={`px-3 py-2 rounded-lg text-sm font-medium no-underline transition-all ${
-                                isActive('/about') 
-                                    ? 'bg-purple-100 text-purple-700' 
+                        <Link
+                            to="/about"
+                            className={`px-3 py-2 rounded-lg text-sm font-medium no-underline transition-all ${isActive('/about')
+                                    ? 'bg-purple-100 text-purple-700'
                                     : 'text-gray-700 hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             About Us
                         </Link>
 
                         {/* Contact Us */}
-                        <Link 
-                            to="/contact" 
-                            className={`px-3 py-2 rounded-lg text-sm font-medium no-underline transition-all ${
-                                isActive('/contact') 
-                                    ? 'bg-purple-100 text-purple-700' 
+                        <Link
+                            to="/contact"
+                            className={`px-3 py-2 rounded-lg text-sm font-medium no-underline transition-all ${isActive('/contact')
+                                    ? 'bg-purple-100 text-purple-700'
                                     : 'text-gray-700 hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             Contact Us
                         </Link>
 
                         {/* Become a Seller */}
-                        <Link 
-                            to="/seller" 
-                            className={`px-3 py-2 rounded-lg text-sm font-medium no-underline transition-all flex items-center gap-2 ${
-                                isActive('/seller') 
-                                    ? 'bg-purple-100 text-purple-700' 
+                        <Link
+                            to="/seller"
+                            className={`px-3 py-2 rounded-lg text-sm font-medium no-underline transition-all flex items-center gap-2 ${isActive('/seller')
+                                    ? 'bg-purple-100 text-purple-700'
                                     : 'text-gray-700 hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -157,11 +153,10 @@ const Navbar = () => {
 
                         {/* Cart Icon */}
                         <Link to="/cart" className="relative group">
-                            <button className={`p-2.5 rounded-lg transition-all ${
-                                isActive('/cart') 
-                                    ? 'bg-purple-100 text-purple-700' 
+                            <button className={`p-2.5 rounded-lg transition-all ${isActive('/cart')
+                                    ? 'bg-purple-100 text-purple-700'
                                     : 'text-gray-700 hover:bg-gray-100'
-                            }`}>
+                                }`}>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="h-6 w-6"
@@ -194,21 +189,21 @@ const Navbar = () => {
                                 onMouseEnter={() => setShowDropdown(true)}
                                 onMouseLeave={() => setShowDropdown(false)}
                             >
-                                <Link to="/login">
-                                    <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md hover:from-purple-700 hover:to-pink-700 hover:shadow-lg transition-all flex items-center gap-2 transform hover:scale-105">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                        </svg>
-                                        <span>Login</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                </Link>
+                                <button
+                                    onClick={() => navigate('/login')}
+                                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md hover:from-purple-700 hover:to-pink-700 hover:shadow-lg transition-all flex items-center gap-2 transform hover:scale-105">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                                    </svg>
+                                    <span>Login</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
 
                                 {/* Dropdown Menu - Preview for non-logged users */}
                                 {showDropdown && (
-                                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100 z-50">
+                                    <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100 z-[100]">
                                         {/* Header */}
                                         <div className="px-4 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                                             <div className="text-center">
@@ -312,7 +307,7 @@ const Navbar = () => {
 
                                 {/* Dropdown Menu */}
                                 {showDropdown && (
-                                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100 z-50">
+                                    <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100 z-[100]">
                                         {/* User Info Header */}
                                         <div className="px-4 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                                             <div className="flex items-center gap-3">
@@ -423,7 +418,7 @@ const Navbar = () => {
                                 )}
                             </button>
                         </Link>
-                        
+
                         <button
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
                             className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
@@ -468,7 +463,7 @@ const Navbar = () => {
                         <Link to="/seller" className={`block px-4 py-2 rounded-lg no-underline ${isActive('/seller') ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}>
                             Become a Seller
                         </Link>
-                        
+
                         {!user ? (
                             <Link to="/login" className="block px-4 py-2">
                                 <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2.5 rounded-lg font-semibold">

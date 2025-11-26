@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         clothName: '',
         category: '',
@@ -11,6 +13,11 @@ const AdminPanel = () => {
         condition: 'excellent',
         occasion: ''
     });
+
+    useEffect(() => {
+        // Redirect to seller auth page
+        navigate('/seller-auth');
+    }, [navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
