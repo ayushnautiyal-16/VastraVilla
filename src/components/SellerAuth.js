@@ -47,9 +47,23 @@ const SellerAuth = () => {
                 })
                 .catch((error) => {
                     const errorCode = error.code;
-                    const errorMessage = error.message;
-                    setErrorMessage(errorCode + " - " + errorMessage);
                     setLoading(false);
+
+                    // User-friendly error messages
+                    if (errorCode === 'auth/email-already-in-use') {
+                        setErrorMessage('📧 This email is already registered! Switching to login...');
+                        // Auto switch to login form after 2 seconds
+                        setTimeout(() => {
+                            setIsSignInForm(true);
+                            setErrorMessage('Please login with your existing account');
+                        }, 2000);
+                    } else if (errorCode === 'auth/weak-password') {
+                        setErrorMessage('🔐 Password should be at least 6 characters');
+                    } else if (errorCode === 'auth/invalid-email') {
+                        setErrorMessage('📧 Please enter a valid email address');
+                    } else {
+                        setErrorMessage(error.message);
+                    }
                 });
         } else {
             // Sign in logic for seller
@@ -63,9 +77,24 @@ const SellerAuth = () => {
                 })
                 .catch((error) => {
                     const errorCode = error.code;
-                    const errorMessage = error.message;
-                    setErrorMessage(errorCode + " - " + errorMessage);
                     setLoading(false);
+
+                    // User-friendly error messages
+                    if (errorCode === 'auth/user-not-found') {
+                        setErrorMessage('❌ No account found with this email. Please register first.');
+                        setTimeout(() => {
+                            setIsSignInForm(false);
+                            setErrorMessage(null);
+                        }, 2000);
+                    } else if (errorCode === 'auth/wrong-password') {
+                        setErrorMessage('🔐 Incorrect password. Please try again.');
+                    } else if (errorCode === 'auth/invalid-credential') {
+                        setErrorMessage('❌ Invalid email or password. Please check and try again.');
+                    } else if (errorCode === 'auth/too-many-requests') {
+                        setErrorMessage('⚠️ Too many failed attempts. Please try again later.');
+                    } else {
+                        setErrorMessage(error.message);
+                    }
                 });
         }
     };
