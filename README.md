@@ -1,43 +1,109 @@
 # 🎭 VastraVilla
 
-**A Peer-to-Peer Clothing Rental Marketplace**
+**India's First Peer-to-Peer Clothing Rental Marketplace**
 
-VastraVilla is a modern e-commerce platform that enables users to rent clothes from each other for special occasions like weddings, parties, festivals, and events. Share your wardrobe, earn money, and find the perfect outfit without the commitment of buying!
+VastraVilla is a modern P2P platform where users can **rent clothes from each other**. List your wardrobe to earn money, or rent premium outfits for weddings, parties & events at affordable prices!
 
 ---
 
-## 🌟 Features
+## 🌟 How It Works
 
-### For Renters
+### 🔄 Peer-to-Peer Model
 
-- 🔍 **Smart Search** - Find clothes by occasion, size, style, or event type
-- 🛒 **Shopping Cart** - Add multiple items and manage your rentals
-- 👗 **Wide Selection** - Browse clothes for weddings, parties, festivals, and more
-- 💳 **Easy Checkout** - Simple and secure rental process
+Unlike traditional rental stores, VastraVilla connects **real people**:
 
-### For Sellers
+- **Sellers** list their clothes and set rental prices
+- **Renters** browse, book, and pay for clothes they like
+- Both parties are protected by our **security deposit** and **late fee** system
 
-- 📸 **List Your Clothes** - Upload photos and details of clothes you want to rent out
-- 💰 **Earn Money** - Set your own rental prices and duration
-- 📊 **Seller Dashboard** - Manage your listings, track rentals, and earnings
-- 🎯 **Flexible Options** - Choose rental duration, occasions, and conditions
+### 💰 Pricing Structure
 
-### General Features
+When renting clothes, users pay:
+| Fee Type | Description |
+|----------|-------------|
+| **Rental Fee** | Daily/weekly rental price set by seller (e.g., ₹500/day) |
+| **Security Deposit** | Refundable amount (50-100% of item value) to protect seller |
+| **Platform Fee** | Small commission for VastraVilla (optional) |
 
-- 🎨 **Modern UI** - Clean, responsive design built with Tailwind CSS
-- 🔐 **Secure Authentication** - Safe login and user management
-- 📱 **Mobile Responsive** - Works perfectly on all devices
-- ⚡ **Fast & Smooth** - Built with React for optimal performance
+### 🔐 Protection System
+
+| Protection           | For Sellers                              | For Renters                                    |
+| -------------------- | ---------------------------------------- | ---------------------------------------------- |
+| **Security Deposit** | Covers damage, loss, or theft of clothes | Fully refundable if returned in good condition |
+| **Late Return Fee**  | ₹200-500/day extra income if late        | Ensures timely return to avoid charges         |
+| **Verified Users**   | Only verified renters can book           | Sellers are verified with ID proof             |
+
+---
+
+## 🎯 Key Features
+
+### For Renters 👗
+
+- 🔍 **Browse Listings** - Find clothes by occasion, size, style
+- 📍 **Local Pickups** - Rent from people near you
+- 💳 **Secure Payment** - Pay rental + refundable deposit
+- ⭐ **Reviews & Ratings** - Check seller ratings before booking
+
+### For Sellers (Cloth Owners) 💰
+
+- 📸 **List Your Clothes** - Upload photos, set your own prices
+- 🛡️ **Security Deposit** - Protected against damage/theft
+- ⏰ **Late Fees** - Earn extra if renter returns late
+- 📊 **Seller Dashboard** - Track listings, rentals & earnings
+
+### Platform Features 🚀
+
+- 🔐 **Firebase Authentication** - Secure login/signup
+- 📱 **Responsive Design** - Works on all devices
+- 🎨 **Modern UI** - Built with Tailwind CSS
+- ☁️ **Cloud Storage** - Firebase Storage for images
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19.2.0
-- **Routing**: React Router DOM 7.9.4
-- **Styling**: Tailwind CSS
-- **Icons**: Custom SVG icons
-- **State Management**: React Hooks (useState)
+| Technology             | Purpose                |
+| ---------------------- | ---------------------- |
+| **React 19**           | Frontend framework     |
+| **React Router**       | Navigation & routing   |
+| **Tailwind CSS**       | Styling & UI           |
+| **Firebase Auth**      | User authentication    |
+| **Firebase Storage**   | Image uploads          |
+| **Firebase Firestore** | Database (coming soon) |
+
+---
+
+## 📁 Project Structure
+
+```
+VastraVilla/
+├── public/
+│   ├── slide1.jpg, slide2.jpg, slide3.jpg  # Banner images
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── Navbar.js          # Navigation bar
+│   │   ├── Home.js            # Landing page with slider
+│   │   ├── ClothingList.js    # Display rental listings
+│   │   ├── ClothingCard.js    # Individual listing card
+│   │   ├── Login.js           # User authentication
+│   │   ├── SellerAuth.js      # Seller login/signup
+│   │   ├── SellerDashboard.js # Seller management panel
+│   │   ├── Cart.js            # Shopping cart
+│   │   ├── AboutUs.js         # About page
+│   │   └── ContactUs.js       # Contact page
+│   ├── data/
+│   │   └── clothingData.js    # Sample clothing data
+│   ├── utils/
+│   │   ├── firebase.js        # Firebase configuration
+│   │   ├── storageUtils.js    # Image upload utilities
+│   │   └── validate.js        # Form validation
+│   ├── App.js                 # Main app with routes
+│   ├── index.js               # Entry point
+│   └── index.css              # Global styles
+├── .env                       # Firebase credentials
+└── package.json
+```
 
 ---
 
@@ -45,8 +111,9 @@ VastraVilla is a modern e-commerce platform that enables users to rent clothes f
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
+- Node.js (v14+)
 - npm or yarn
+- Firebase project (for auth & storage)
 
 ### Installation
 
@@ -63,73 +130,65 @@ VastraVilla is a modern e-commerce platform that enables users to rent clothes f
    npm install
    ```
 
-3. **Start the development server**
+3. **Setup Firebase**
+
+   - Create a Firebase project at https://console.firebase.google.com
+   - Enable Authentication (Email/Password)
+   - Enable Storage
+   - Copy credentials to `.env`:
+
+   ```env
+   REACT_APP_FIREBASE_API_KEY=your_api_key
+   REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+   REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   REACT_APP_FIREBASE_APP_ID=your_app_id
+   ```
+
+4. **Start development server**
 
    ```bash
    npm start
    ```
 
-4. **Open your browser**
+5. **Open browser**
    ```
-   Navigate to http://localhost:3000
+   http://localhost:3000
    ```
 
 ---
 
-## 📁 Project Structure
+## 💡 Business Model
 
-```
-VastraVilla/
-├── public/
-│   ├── index.html
-│   ├── logo.png
-│   ├── manifest.json
-│   └── robots.txt
-├── src/
-│   ├── components/
-│   │   ├── Navbar.js
-│   │   ├── Home.js
-│   │   ├── Login.js
-│   │   ├── Cart.js
-│   │   └── AdminPanel.js
-│   ├── App.js
-│   ├── index.js
-│   └── index.css
-├── package.json
-└── README.md
-```
+### Revenue Streams
+
+1. **Platform Commission** - Small % from each rental transaction
+2. **Featured Listings** - Sellers pay to boost visibility
+3. **Premium Membership** - Benefits for frequent renters/sellers
+
+### Safety Measures
+
+- ✅ Phone & email verification
+- ✅ ID verification for sellers
+- ✅ Security deposit system
+- ✅ Late fee policy
+- ✅ Rating & review system
+- ✅ Dispute resolution
 
 ---
 
 ## 🎯 Roadmap
 
-- [ ] Backend integration with Firebase/Node.js
-- [ ] Payment gateway integration
-- [ ] User authentication & profiles
-- [ ] Real-time chat between renters and sellers
-- [ ] Reviews and ratings system
-- [ ] Advanced search filters
-- [ ] Wishlist functionality
-- [ ] Order tracking
-- [ ] Notification system
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+- [x] User authentication (Firebase)
+- [x] Seller dashboard
+- [x] Image upload to Firebase Storage
+- [ ] Firestore database integration
+- [ ] Payment gateway (Razorpay/Stripe)
+- [ ] Real-time chat between users
+- [ ] Advanced search & filters
+- [ ] Push notifications
+- [ ] Mobile app (React Native)
 
 ---
 
@@ -141,20 +200,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-## 🙏 Acknowledgments
+## 📄 License
 
-- Built with ❤️ using React and Tailwind CSS
-- Inspired by the need for sustainable fashion and sharing economy
-- Special thanks to the open-source community
+This project is licensed under the MIT License.
 
 ---
 
-## 📧 Contact
-
-For any queries or suggestions, feel free to reach out!
+## ⭐ Star this repo if you find it helpful!
 
 **Project Link**: [https://github.com/ayushnautiyal-16/VastraVilla](https://github.com/ayushnautiyal-16/VastraVilla)
-
----
-
-### ⭐ Star this repo if you find it helpful!

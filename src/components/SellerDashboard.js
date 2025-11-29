@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../utils/firebase';
+import { auth, db } from '../utils/firebase';
 import { signOut } from 'firebase/auth';
+import { collection, addDoc, query, where, deleteDoc, doc, serverTimestamp, onSnapshot, getDocs } from 'firebase/firestore';
 import { uploadImageToStorage } from '../utils/storageUtils';
 
 const SellerDashboard = () => {
@@ -10,7 +11,9 @@ const SellerDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
+    const [uploadSuccess, setUploadSuccess] = useState(false);
     const [uploadedImage, setUploadedImage] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
         name: '',
         category: 'Wedding Wear',
@@ -19,48 +22,68 @@ const SellerDashboard = () => {
         description: '',
         image: null
     });
-    const [listings, setListings] = useState([
-        {
-            id: 1,
-            name: "Designer Lehenga",
-            category: "Wedding Wear",
-            price: 2000,
-            status: "Active",
-            rentals: 12,
-            revenue: 24000,
-            image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=300&h=300&fit=crop"
-        },
-        {
-            id: 2,
-            name: "Royal Sherwani",
-            category: "Groom Wear",
-            price: 1500,
-            status: "Active",
-            rentals: 8,
-            revenue: 12000,
-            image: "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?w=300&h=300&fit=crop"
-        },
-        {
-            id: 3,
-            name: "Party Gown",
-            category: "Party Wear",
-            price: 1200,
-            status: "Rented",
-            rentals: 15,
-            revenue: 18000,
-            image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=300&h=300&fit=crop"
-        }
-    ]);
+    const [listings, setListings] = useState([]);
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user) {
-                setUser(user);
+        let unsubscribeFirestore = null;
+
+        const unsubscribeAuth = auth.onAuthStateChanged(async (currentUser) => {
+            if (currentUser) {
+                setUser(currentUser);
+                console.log('User logged in:', currentUser.uid);
+
+                // Fetch ALL data from Firebase ONLY
+                try {
+                    console.log('Fetching from Firebase...');
+                    const q = query(
+                        collection(db, 'listings'),
+                        where('sellerId', '==', currentUser.uid)
+                    );
+
+                    // One-time fetch
+                    const querySnapshot = await getDocs(q);
+                    const firebaseListings = [];
+                    querySnapshot.forEach((docSnap) => {
+                        firebaseListings.push({
+                            id: docSnap.id,
+                            ...docSnap.data()
+                        });
+                    });
+
+                    console.log('Firebase data fetched:', firebaseListings.length, 'items');
+                    setListings(firebaseListings);
+                    setLoading(false);
+
+                    // Real-time listener for live updates
+                    unsubscribeFirestore = onSnapshot(q,
+                        (snapshot) => {
+                            const fetchedListings = [];
+                            snapshot.forEach((docSnap) => {
+                                fetchedListings.push({ id: docSnap.id, ...docSnap.data() });
+                            });
+                            console.log('Firebase real-time update:', fetchedListings.length, 'items');
+                            setListings(fetchedListings);
+                        },
+                        (error) => {
+                            console.error('Firestore listener error:', error);
+                        }
+                    );
+                } catch (error) {
+                    console.error('Firebase fetch error:', error);
+                    setListings([]); // Empty if Firebase fails
+                    setLoading(false);
+                }
             } else {
                 navigate('/seller-auth');
             }
         });
-        return () => unsubscribe();
+
+        return () => {
+            unsubscribeAuth();
+            if (unsubscribeFirestore) {
+                unsubscribeFirestore();
+            }
+        };
     }, [navigate]);
 
     const handleLogout = () => {
@@ -110,13 +133,22 @@ const SellerDashboard = () => {
         }
 
         setUploading(true);
+        setUploadError('');
+
         try {
+            console.log('Starting image upload...');
+
             // Upload image to Firebase Storage
             const result = await uploadImageToStorage(formData.image, 'seller-items');
 
-            // Create new listing with uploaded image
+            if (!result || !result.success) {
+                throw new Error('Image upload failed');
+            }
+
+            console.log('Image uploaded successfully:', result.url);
+
+            // Create new listing object for Firebase
             const newListing = {
-                id: listings.length + 1,
                 name: formData.name,
                 category: formData.category,
                 price: parseInt(formData.price),
@@ -125,10 +157,19 @@ const SellerDashboard = () => {
                 status: 'Active',
                 rentals: 0,
                 revenue: 0,
-                image: result.url
+                image: result.url,
+                sellerId: user.uid,
+                sellerName: user.displayName || user.email,
+                createdAt: serverTimestamp()
             };
 
-            setListings(prev => [...prev, newListing]);
+            // Save to Firestore ONLY
+            console.log('Saving to Firestore...');
+            const docRef = await addDoc(collection(db, 'listings'), newListing);
+            console.log('Saved to Firestore with ID:', docRef.id);
+
+            // Add to local state with Firestore ID (onSnapshot will also update)
+            setListings(prev => [...prev, { id: docRef.id, ...newListing, createdAt: new Date() }]);
 
             // Reset form
             setFormData({
@@ -140,14 +181,38 @@ const SellerDashboard = () => {
                 image: null
             });
             setUploadedImage(null);
-            setActiveTab('overview');
 
-            alert('Item added successfully!');
-        } catch (error) {
-            setUploadError(`Error: ${error.message}`);
-            console.error('Upload error:', error);
-        } finally {
+            // Show success
             setUploading(false);
+            setUploadSuccess(true);
+
+            // After 2 seconds, switch to listings tab
+            setTimeout(() => {
+                setUploadSuccess(false);
+                setActiveTab('overview');
+            }, 2000);
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            setUploadError(`Error: ${error.message}`);
+            setUploading(false);
+        }
+    };
+
+    // Delete listing from Firebase
+    const handleDeleteListing = async (listingId) => {
+        if (window.confirm('Are you sure you want to delete this listing?')) {
+            try {
+                // Delete from Firestore
+                await deleteDoc(doc(db, 'listings', listingId));
+                console.log('Deleted from Firestore:', listingId);
+
+                // Update local state
+                setListings(prev => prev.filter(item => item.id !== listingId));
+            } catch (error) {
+                console.error('Error deleting listing:', error);
+                alert('Error deleting listing: ' + error.message);
+            }
         }
     };
 
@@ -287,51 +352,111 @@ const SellerDashboard = () => {
                     {/* Tab Content */}
                     <div className="p-6">
                         {activeTab === 'overview' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {listings.map((item) => (
-                                    <div key={item.id} className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            className="w-full h-48 object-cover"
-                                        />
-                                        <div className="p-4">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <h3 className="font-bold text-gray-800">{item.name}</h3>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'Active'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
-                                                    }`}>
-                                                    {item.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-gray-500 mb-3">{item.category}</p>
-                                            <div className="space-y-1 text-sm">
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-600">Price:</span>
-                                                    <span className="font-semibold text-purple-600">₹{item.price}/day</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-600">Rentals:</span>
-                                                    <span className="font-semibold">{item.rentals}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-600">Revenue:</span>
-                                                    <span className="font-semibold text-green-600">₹{item.revenue.toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                            <div className="mt-4 flex gap-2">
-                                                <button className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm">
-                                                    Edit
-                                                </button>
-                                                <button className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm">
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
+                            <>
+                                {loading ? (
+                                    <div className="flex justify-center items-center py-12">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                                        <span className="ml-3 text-gray-600">Loading your listings...</span>
                                     </div>
-                                ))}
-                            </div>
+                                ) : listings.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                            </svg>
+                                        </div>
+                                        <h3 className="text-xl font-bold text-gray-800 mb-2">No Listings Yet</h3>
+                                        <p className="text-gray-600 mb-4">Start by adding your first clothing item for rent</p>
+                                        <button
+                                            onClick={() => setActiveTab('add')}
+                                            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                        >
+                                            + Add Your First Item
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {listings.map((item) => {
+                                            // Format date
+                                            const createdDate = item.createdAt?.toDate ? item.createdAt.toDate() : (item.createdAt ? new Date(item.createdAt) : new Date());
+                                            const formattedDate = createdDate.toLocaleDateString('en-IN', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric'
+                                            });
+
+                                            return (
+                                                <div key={item.id} className="border rounded-xl overflow-hidden hover:shadow-xl transition-all bg-white">
+                                                    <div className="relative">
+                                                        <img
+                                                            src={item.image}
+                                                            alt={item.name}
+                                                            className="w-full h-52 object-cover"
+                                                        />
+                                                        <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold shadow-md ${item.status === 'Active'
+                                                            ? 'bg-green-500 text-white'
+                                                            : 'bg-yellow-500 text-white'
+                                                            }`}>
+                                                            {item.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="p-4">
+                                                        <h3 className="font-bold text-lg text-gray-800 mb-1">{item.name}</h3>
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">{item.category}</span>
+                                                            <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">Size: {item.size}</span>
+                                                        </div>
+
+                                                        {item.description && (
+                                                            <p className="text-sm text-gray-500 mb-3 line-clamp-2">{item.description}</p>
+                                                        )}
+
+                                                        <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                                                            <div className="grid grid-cols-2 gap-2 text-sm">
+                                                                <div>
+                                                                    <span className="text-gray-500">Rent Price</span>
+                                                                    <p className="font-bold text-purple-600 text-lg">₹{item.price}/day</p>
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-gray-500">Listed On</span>
+                                                                    <p className="font-semibold text-gray-800">{formattedDate}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between text-sm mb-3">
+                                                            <div className="text-center">
+                                                                <p className="text-gray-500">Rentals</p>
+                                                                <p className="font-bold text-blue-600">{item.rentals || 0}</p>
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <p className="text-gray-500">Revenue</p>
+                                                                <p className="font-bold text-green-600">₹{(item.revenue || 0).toLocaleString()}</p>
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <p className="text-gray-500">Deposit</p>
+                                                                <p className="font-bold text-amber-600">₹{item.price * 3 || 0}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex gap-2">
+                                                            <button className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+                                                                ✏️ Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteListing(item.id)}
+                                                                className="flex-1 px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
+                                                            >
+                                                                🗑️ Delete
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         {activeTab === 'add' && (
@@ -440,15 +565,38 @@ const SellerDashboard = () => {
                                             )}
                                         </label>
                                     </div>
+                                    {/* Success Message */}
+                                    {uploadSuccess && (
+                                        <div className="bg-green-100 border border-green-400 text-green-700 px-6 py-4 rounded-lg flex items-center gap-3 animate-pulse">
+                                            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <div>
+                                                <p className="font-bold text-lg">🎉 Photo Uploaded Successfully!</p>
+                                                <p className="text-sm">Your item has been added. Redirecting to listings...</p>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <button
                                         type="submit"
-                                        disabled={uploading}
-                                        className={`w-full py-3 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg ${uploading
-                                            ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                                            : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+                                        disabled={uploading || uploadSuccess}
+                                        className={`w-full py-4 rounded-lg font-bold text-lg transition-all shadow-md hover:shadow-lg ${uploadSuccess
+                                            ? 'bg-green-500 text-white cursor-not-allowed'
+                                            : uploading
+                                                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                                : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
                                             }`}
                                     >
-                                        {uploading ? 'Uploading...' : 'Add Item'}
+                                        {uploadSuccess ? '✅ Uploaded Successfully!' : uploading ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Uploading to Firebase...
+                                            </span>
+                                        ) : '➕ Add Item'}
                                     </button>
                                 </form>
                             </div>

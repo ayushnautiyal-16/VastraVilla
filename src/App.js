@@ -17,7 +17,7 @@ import SellerDashboard from './components/SellerDashboard';
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-rose-100">
         <Navbar />
         <CategoryBar />
         <Routes>

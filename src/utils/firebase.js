@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -19,19 +20,21 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app, analytics, auth, storage;
+let app, analytics, auth, storage, db;
 
 try {
     app = initializeApp(firebaseConfig);
     analytics = getAnalytics(app);
     auth = getAuth(app);
     storage = getStorage(app);
+    db = getFirestore(app);
     console.log("Firebase initialized successfully");
 } catch (error) {
     console.warn("Firebase initialization failed. Using demo mode.", error);
     // Create mock auth object for demo mode
     auth = null;
     storage = null;
+    db = null;
 }
 
-export { auth, storage };
+export { auth, storage, db };

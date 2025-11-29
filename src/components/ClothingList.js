@@ -4,7 +4,7 @@ import { clothingItems } from '../data/clothingData';
 
 const ClothingList = () => {
     return (
-        <div className="bg-gray-50 min-h-screen py-12">
+        <div className="py-12">
             <div className="max-w-7xl mx-auto px-4">
                 <div className="mb-8">
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">Popular Rentals</h2>
